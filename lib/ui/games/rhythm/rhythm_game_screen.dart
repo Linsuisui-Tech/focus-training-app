@@ -125,49 +125,38 @@ class _RhythmGameScreenState extends State<RhythmGameScreen> {
     final rightDuration = _rightActual * level.rightPeriodMs;
     final totalDuration = max(leftDuration, rightDuration) + 500;
 
-    _leftTimer = Timer.periodic(Duration(milliseconds: level.leftPeriodMs), (_) {
+    // 左右两路各自按节奏闪烁，用计数精确限制为 _leftActual / _rightActual 次，
+    // 保证“用户看到的闪烁数”与“判定答案”严格一致（此前会多出一次而判错）。
+    var leftCount = 0;
+    _leftTimer = Timer.periodic(Duration(milliseconds: level.leftPeriodMs), (t) {
+      if (leftCount >= _leftActual) {
+        t.cancel();
+        return;
+      }
       setState(() {
         _leftFlash = true;
         _leftFlashCount++;
       });
+      leftCount++;
       Future.delayed(const Duration(milliseconds: 150), () {
         if (mounted) setState(() => _leftFlash = false);
       });
     });
 
-    _rightTimer = Timer.periodic(Duration(milliseconds: level.rightPeriodMs), (_) {
+    var rightCount = 0;
+    _rightTimer = Timer.periodic(Duration(milliseconds: level.rightPeriodMs), (t) {
+      if (rightCount >= _rightActual) {
+        t.cancel();
+        return;
+      }
       setState(() {
         _rightFlash = true;
         _rightFlashCount++;
       });
+      rightCount++;
       Future.delayed(const Duration(milliseconds: 150), () {
         if (mounted) setState(() => _rightFlash = false);
       });
-    });
-
-    // 先触发一次
-    Future.delayed(const Duration(milliseconds: 50), () {
-      if (mounted) {
-        setState(() {
-          _leftFlash = true;
-          _leftFlashCount++;
-        });
-        Future.delayed(const Duration(milliseconds: 150), () {
-          if (mounted) setState(() => _leftFlash = false);
-        });
-      }
-    });
-
-    Future.delayed(const Duration(milliseconds: 50), () {
-      if (mounted) {
-        setState(() {
-          _rightFlash = true;
-          _rightFlashCount++;
-        });
-        Future.delayed(const Duration(milliseconds: 150), () {
-          if (mounted) setState(() => _rightFlash = false);
-        });
-      }
     });
 
     _stopTimer = Timer(Duration(milliseconds: totalDuration), () {

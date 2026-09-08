@@ -4,10 +4,30 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants.dart';
 import '../../core/theme.dart';
+import '../../data/repositories/training_repository.dart';
 
-/// 首页：今日计划卡片 + 快速开始 + 能力雷达图入口
-class HomeScreen extends StatelessWidget {
+/// 首页：今日计划卡片 + 快速开始 + 数据概览
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Map<String, dynamic> _summary = {'totalCount': 0, 'totalSeconds': 0, 'streak': 0};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSummary();
+  }
+
+  Future<void> _loadSummary() async {
+    final s = await TrainingRepository.getSummary();
+    if (!mounted) return;
+    setState(() => _summary = s);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,6 +170,9 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildStatsPreview(BuildContext context) {
+    final totalCount = (_summary['totalCount'] ?? 0) as int;
+    final totalMinutes = ((_summary['totalSeconds'] ?? 0) as int) ~/ 60;
+    final streak = (_summary['streak'] ?? 0) as int;
     return Card(
       child: InkWell(
         onTap: () => context.push(RouteNames.stats),
@@ -162,14 +185,14 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('本周专注', style: context.textTheme.titleMedium),
+                    Text('累计专注', style: context.textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
-                      '3 小时 42 分钟',
+                      '$totalMinutes 分钟 · $totalCount 次',
                       style: context.textTheme.headlineSmall?.copyWith(color: AppTheme.neonCyan),
                     ),
                     const SizedBox(height: 4),
-                    Text('比上周多 28%', style: context.textTheme.bodySmall),
+                    Text('连续 $streak 天', style: context.textTheme.bodySmall),
                   ],
                 ),
               ),

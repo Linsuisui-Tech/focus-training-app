@@ -107,7 +107,8 @@ class _ShootingGameScreenState extends State<ShootingGameScreen> {
     _countdownTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
       setState(() {
         _elapsed += 0.1;
-        if (_elapsed >= _gameDurationSeconds || _spawnedCount >= level.totalTargets + 1) {
+        // 达到目标数时的结束已由“命中最后一个目标”触发，这里以计时为兜底。
+        if (_elapsed >= _gameDurationSeconds) {
           _finishGame();
         }
       });
@@ -122,9 +123,14 @@ class _ShootingGameScreenState extends State<ShootingGameScreen> {
       return;
     }
     _spawnedCount++;
+    // 首次进入时 _playArea 尚未完成布局，给兜底尺寸避免目标生成到负坐标。
+    final w = _playArea.width <= 0 ? 360.0 : _playArea.width;
+    final h = _playArea.height <= 0 ? 480.0 : _playArea.height;
+    final maxX = (w - level.targetSize).clamp(0.0, double.infinity);
+    final maxY = (h - level.targetSize).clamp(0.0, double.infinity);
     _currentTarget = _ShootingTarget(
-      x: _rng.nextDouble() * (_playArea.width - level.targetSize) + level.targetSize / 2,
-      y: _rng.nextDouble() * (_playArea.height - level.targetSize) + level.targetSize / 2,
+      x: _rng.nextDouble() * maxX + level.targetSize / 2,
+      y: _rng.nextDouble() * maxY + level.targetSize / 2,
       spawnTime: DateTime.now(),
     );
   }

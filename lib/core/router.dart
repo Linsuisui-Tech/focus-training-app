@@ -21,7 +21,6 @@ import '../ui/settings/settings_screen.dart';
 /// 使用 GoRouter 实现声明式路由，便于深层链接与页面转场统一管理。
 final GoRouter appRouter = GoRouter(
   initialLocation: RouteNames.home,
-  debugLogDiagnostics: true,
   routes: [
     GoRoute(
       path: RouteNames.home,

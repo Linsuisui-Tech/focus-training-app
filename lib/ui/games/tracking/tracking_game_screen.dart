@@ -107,9 +107,15 @@ class _TrackingGameScreenState extends State<TrackingGameScreen> with SingleTick
 
   _TrackingTarget _createTarget(TrackingLevel level) {
     final size = level.targetSize;
+    // 首次进入时 _playArea 尚未完成布局（Size.zero），给一个兜底画布尺寸，
+    // 避免首个目标生成到负坐标导致不可见。
+    final w = _playArea.width <= 0 ? 360.0 : _playArea.width;
+    final h = _playArea.height <= 0 ? 480.0 : _playArea.height;
+    final maxX = (w - size).clamp(0.0, double.infinity);
+    final maxY = (h - size).clamp(0.0, double.infinity);
     return _TrackingTarget(
-      x: _rng.nextDouble() * (_playArea.width - size) + size / 2,
-      y: _rng.nextDouble() * (_playArea.height - size) + size / 2,
+      x: _rng.nextDouble() * maxX + size / 2,
+      y: _rng.nextDouble() * maxY + size / 2,
       vx: (_rng.nextDouble() - 0.5) * 2 * level.speed,
       vy: (_rng.nextDouble() - 0.5) * 2 * level.speed,
     );
