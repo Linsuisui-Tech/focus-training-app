@@ -76,7 +76,7 @@ class AppConstants {
 
   static const String appName = 'Focus Spark';
   static const String appNameCn = '专注力训练';
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.0.1';
 
   // 本地存储 Key
   static const String hiveBoxName = 'focus_training_box';
